@@ -20,13 +20,7 @@ class XMLFormatter
       token = next_token
       break if token.nil?
 
-      case token.type
-      when :open   then  process_opening_tag token
-      when :close  then  output_tag token
-      when :text   then  output_text token
-      else
-        fail "Bad token returned from next_token: #{token}"
-      end
+      process_token token
     end
   end
 
@@ -45,6 +39,16 @@ class XMLFormatter
     end
   end
 
+  def process_token(token)
+    case token.type
+    when :open   then  process_opening_tag token
+    when :close  then  output_tag token
+    when :text   then  output_text token
+    else
+      fail "Bad token returned from next_token: #{token}"
+    end
+  end
+
   # Process a sequence like <name>Julian</name>
   def process_opening_tag(open_token)
     # If another tag follows the first, output the first and return
@@ -52,14 +56,6 @@ class XMLFormatter
 
     # Some sort of text follows for sure
     text_token = next_token
-
-    # If the next character isn't a tag lead-in, output what we have
-    # and return
-    if @reader.peek_char != '<'
-      output_tag open_token
-      output_text text_token
-      return
-    end
 
     # It should be a closing tag now...
     close_token = next_token
@@ -114,17 +110,17 @@ class XMLFormatter
   end
 
   def adjust_indent_before(token)
-    if token.type == :close
-      @indent -= 1
-      fail 'Indent has gone through 0' if @indent < 0
-    end
+    return unless token.type == :close
+
+    @indent -= 1
+    fail 'Indent has gone through 0' if @indent < 0
   end
 
   def adjust_indent_after(token)
-    if token.type == :open
-      @indent += 1 unless '/?'.include? token.text[-2]
-      fail 'Indent has gone too far' if @indent > 50
-    end
+    return unless token.type == :open
+
+    @indent += 1 unless '/?'.include? token.text[-2]
+    fail 'Indent has gone too far' if @indent > 50
   end
 
   def output_text(token)
