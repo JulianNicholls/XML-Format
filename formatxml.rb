@@ -105,19 +105,23 @@ class XMLFormatter
   end
 
   def output_tag(token)
-    adjust_indent token
+    adjust_indent_before token
 
     indent
     puts token.text
 
-    adjust_indent token
+    adjust_indent_after token
   end
 
-  def adjust_indent(token)
+  def adjust_indent_before(token)
     if token.type == :close
       @indent -= 1
       fail 'Indent has gone through 0' if @indent < 0
-    else
+    end
+  end
+
+  def adjust_indent_after(token)
+    if token.type == :open
       @indent += 1 unless '/?'.include? token.text[-2]
       fail 'Indent has gone too far' if @indent > 50
     end
