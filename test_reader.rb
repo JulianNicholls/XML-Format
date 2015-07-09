@@ -5,23 +5,23 @@ class TestXMLReader < XMLReader
   attr_reader :buffer, :index
 end
 
-reader = TestXMLReader.new 'testfile.txt', 15
+reader = TestXMLReader.new 'testfile.txt', 10
 
 puts "Buffer: '#{reader.buffer}', #{reader.index}"
 
-16.times do
+10.times do
   puts "'#{reader.next_char}' - Buffer: '#{reader.buffer}', #{reader.index}"
 end
 
-reader.put_back
-puts "\n'#{reader.next_char}' - Buffer: '#{reader.buffer}', #{reader.index}"
-
-reader.put_back
-reader.put_back
+puts "\nPeek: '#{reader.peek_char}' - Buffer: '#{reader.buffer}', #{reader.index}"
 puts "'#{reader.next_char}' - Buffer: '#{reader.buffer}', #{reader.index}"
 
-reader.put_back
-reader.put_back
-puts "'#{reader.next_char}' - Buffer: '#{reader.buffer}', #{reader.index}"
+# reader.put_back
+# reader.put_back
+# puts "'#{reader.next_char}' - Buffer: '#{reader.buffer}', #{reader.index}"
+
+# reader.put_back
+# reader.put_back
+# puts "'#{reader.next_char}' - Buffer: '#{reader.buffer}', #{reader.index}"
 
 puts "\nBuffer: '#{reader.buffer}', #{reader.index}"

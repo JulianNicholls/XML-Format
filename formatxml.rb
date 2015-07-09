@@ -5,6 +5,9 @@
 
 require './xml_reader'
 
+# Token class
+Token = Struct.new(:type, :text)
+
 # Format an XML file with indentation and newlines after closing tags.
 class XMLFormatter
   def initialize(filename)
@@ -14,38 +17,56 @@ class XMLFormatter
 
   def process
     loop do
-      item = @reader.next_char
-      break if item.nil?
+      token = next_token
+      break if token.nil?
 
-      if item == '<'
-        process_opening_tag
+      case token.type
+      when :open   then  process_opening_tag token
+      when :close  then  output_tag token
+      when :text   then  output_text token
       else
-        item += read_until_open   # lone text_item
-        format_item item
+        fail "Bad token returned from next_token: #{token}"
       end
     end
   end
 
   private
 
-  def process_opening_tag
-    open = '<' + read_until_close
-
-    return format_bracketed_item(open) if open[1] == '/'
-
-    text = @reader.next_char
+  def next_token
+    text = @reader.peek_char
+    return nil if text.nil?
 
     if text == '<'
-      format_bracketed_item open
-      return @reader.put_back
+      text = read_until_close
+      Token.new(text[1] == '/' ? :close : :open, text)
+    else
+      text = read_until_open
+      Token.new(:text, text)
+    end
+  end
+
+  # Process a sequence like <name>Julian</name>
+  def process_opening_tag(open_token)
+    # If another tag follows the first, output the first and return
+    return output_tag(open_token) if @reader.peek_char == '<'
+
+    # Some sort of text follows for sure
+    text_token = next_token
+
+    # If the next character isn't a tag lead-in, output what we have
+    # and return
+    if @reader.peek_char != '<'
+      output_tag open_token
+      output_text text_token
+      return
     end
 
-    text += read_until_open
+    # It should be a closing tag now...
+    close_token = next_token
+    fail "Not a close: #{open_token} #{text_token} #{close_token}" unless
+      close_token.type == :close
 
-    close = read_until_close
-    fail "Not a close: #{open} #{text} #{close}" unless close[1] == '/'
-
-    format_tagged_item(open, text, close)
+    format_tagged_item(open_token, text_token, close_token)
   end
 
   def read_until_close
@@ -53,10 +74,7 @@ class XMLFormatter
   end
 
   def read_until_open
-    str = read_until('<')
-    str.slice!(-1)        # Remove last char
-    @reader.put_back      # and return it to be re-read
-    str
+    read_upto('<')
   end
 
   def read_until(last)
@@ -70,32 +88,44 @@ class XMLFormatter
     str
   end
 
-  def format_item(item)
-    if item[0] == '<'
-      format_bracketed_item item
-    else
-      format_text_item item
+  def read_upto(last)
+    str = ''
+
+    loop do
+      char = @reader.peek_char
+      break if char == last
+      str += @reader.next_char
     end
+    str
   end
 
   def format_tagged_item(open, text, close)
     indent
-    puts "#{open}#{text}#{close}"
+    puts "#{open.text}#{text.text}#{close.text}"
   end
 
-  def format_bracketed_item(item)
-    @indent -= 1 if (item[1] == '/')
-    fail 'Indent has gone through 0' if @indent < 0
-    indent
-    puts item
+  def output_tag(token)
+    adjust_indent token
 
-    @indent += 1 if item[1] != '/' && item[-2] != '/'
-    fail 'Indent gone too far' if @indent > 50
+    indent
+    puts token.text
+
+    adjust_indent token
   end
 
-  def format_text_item(item)
+  def adjust_indent(token)
+    if token.type == :close
+      @indent -= 1
+      fail 'Indent has gone through 0' if @indent < 0
+    else
+      @indent += 1 unless '/?'.include? token.text[-2]
+      fail 'Indent has gone too far' if @indent > 50
+    end
+  end
+
+  def output_text(token)
     indent
-    puts item
+    puts token.text
   end
 
   def indent

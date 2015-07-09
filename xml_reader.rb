@@ -1,7 +1,5 @@
 # Reader of files, that buffers and ensures that 10 characters of pushback
 class XMLReader
-  SLACK = 10
-
   def initialize(filename, chunk = 1_048_576 * 5)
     @file = open filename
     @chunk = chunk
@@ -11,29 +9,37 @@ class XMLReader
     exit 1
   end
 
+  # The difference between next_char and peek_char is that peek_char returns
+  # the current character and only moves on if it's a newline.
+
   def next_char
-    return nil if @buffer.size == SLACK
+    return nil if @buffer.nil?
 
     loop do
-      @char = @buffer[@index]
+      char = @buffer[@index]
       @index += 1
       refill if @index == @buffer.size
 
-      return @char unless @char =~ /[\r\n]/
+      return char unless char =~ /[\r\n]/
     end
   end
 
-  def put_back
-    @index -= 1
-    fail 'put_back has gone too far.' if @index == -1
+  def peek_char
+    return nil if @buffer.nil?
+
+    loop do
+      char = @buffer[@index]
+      return char unless char =~ /[\r\n]/
+
+      @index += 1
+      refill if @index == @buffer.size
+    end
   end
 
   private
 
   def refill
-    @buffer = @buffer.nil? ? ' ' * 10 : @buffer.slice(-SLACK..-1)
-    read = @file.read @chunk
-    @buffer << read unless read.nil?
-    @index = SLACK
+    @buffer = @file.read @chunk
+    @index = 0
   end
 end
