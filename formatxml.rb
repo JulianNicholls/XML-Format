@@ -4,15 +4,14 @@
 #   sys	    8m1.223s        7m45.402s    sys   0m6.491s      0m4.9s
 
 require './xml_reader'
-
-# Token class
-Token = Struct.new(:type, :text)
+require './token'
+require './spacer'
 
 # Format an XML file with indentation and newlines after closing tags.
 class XMLFormatter
   def initialize(filename)
     @reader = XMLReader.new filename
-    @indent = 0
+    @spacer = Spacer.new
   end
 
   def process
@@ -32,18 +31,17 @@ class XMLFormatter
 
     if text == '<'
       text = read_until_close
-      Token.new(text[1] == '/' ? :close : :open, text)
+      text[1] == '/' ? CloseToken.new(text) : OpenToken.new(text)
     else
-      text = read_until_open
-      Token.new(:text, text)
+      TextToken.new(read_until_open)
     end
   end
 
   def process_token(token)
     case token.type
     when :open   then  process_opening_tag token
-    when :close  then  output_tag token
-    when :text   then  output_text token
+    when :close  then  token.output @spacer
+    when :text   then  token.output @spacer
     else
       fail "Bad token returned from next_token: #{token}"
     end
@@ -52,7 +50,7 @@ class XMLFormatter
   # Process a sequence like <name>Julian</name>
   def process_opening_tag(open_token)
     # If another tag follows the first, output the first and return
-    return output_tag(open_token) if @reader.peek_char == '<'
+    return open_token.output(@spacer) if @reader.peek_char == '<'
 
     # Some sort of text follows for sure
     text_token = next_token
@@ -66,70 +64,16 @@ class XMLFormatter
   end
 
   def read_until_close
-    read_until('>')
+    @reader.read_until '>'
   end
 
   def read_until_open
-    read_upto('<')
-  end
-
-  def read_until(last)
-    str = ''
-
-    loop do
-      char = @reader.next_char
-      str += char
-      break if char == last
-    end
-    str
-  end
-
-  def read_upto(last)
-    str = ''
-
-    loop do
-      char = @reader.peek_char
-      break if char == last
-      str += @reader.next_char
-    end
-    str
+    @reader.read_upto '<'
   end
 
   def format_tagged_item(open, text, close)
-    indent
+    @spacer.output
     puts "#{open.text}#{text.text}#{close.text}"
-  end
-
-  def output_tag(token)
-    adjust_indent_before token
-
-    indent
-    puts token.text
-
-    adjust_indent_after token
-  end
-
-  def adjust_indent_before(token)
-    return unless token.type == :close
-
-    @indent -= 1
-    fail 'Indent has gone through 0' if @indent < 0
-  end
-
-  def adjust_indent_after(token)
-    return unless token.type == :open
-
-    @indent += 1 unless '/?'.include? token.text[-2]
-    fail 'Indent has gone too far' if @indent > 50
-  end
-
-  def output_text(token)
-    indent
-    puts token.text
-  end
-
-  def indent
-    print '  ' * @indent
   end
 end
 

@@ -19,7 +19,7 @@ end
 fail "Bad Reads" if str != 'ABCDEFGHIJ'
 
 str = reader.read_upto 'P'
-fail "Bad Reads" if str != 'KLMNO'
+fail "Bad Reads: #{str}" if str != 'KLMNO'
 
 str = reader.read_until '9'
 fail "Bad Reads" if str != 'PQRSTUVWXYZ0123456789'

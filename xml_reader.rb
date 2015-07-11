@@ -4,39 +4,47 @@ class XMLReader
     @file = open filename
     @chunk = chunk
     refill
-  rescue => e
-    $stderr.puts "Cannot open #{filename}: #{e.message}"
+  rescue => error
+    $stderr.puts "Cannot open #{filename}: #{error.message}"
     exit 1
   end
 
-  # The difference between next_char and peek_char is that peek_char returns
-  # the current character and only moves on if it's a newline.
+  def read_until(last)
+    str = read_upto last
+    str << next_char
+  end
+
+  def read_upto(last)
+    str = ''
+
+    str << next_char while peek_char != last
+    str
+  end
 
   def next_char
-    return nil if @buffer.nil?
-
-    loop do
-      char = @buffer[@index]
-      @index += 1
-      refill if @index == @buffer.size
-
-      return char unless char =~ /[\r\n]/
-    end
+    char = peek_char
+    increment
+    char
+  rescue
+    nil
   end
 
   def peek_char
-    return nil if @buffer.nil?
-
     loop do
       char = @buffer[@index]
       return char unless char =~ /[\r\n]/
-
-      @index += 1
-      refill if @index == @buffer.size
+      increment
     end
+  rescue
+    nil
   end
 
   private
+
+  def increment
+    @index += 1
+    refill if @index == @buffer.size
+  end
 
   def refill
     @buffer = @file.read @chunk
