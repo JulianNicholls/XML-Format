@@ -9,19 +9,21 @@ reader = TestXMLReader.new 'testfile.txt', 10
 
 puts "Buffer: '#{reader.buffer}', #{reader.index}"
 
+str = ''
+
 10.times do
-  puts "'#{reader.next_char}' - Buffer: '#{reader.buffer}', #{reader.index}"
+  puts "'#{reader.peek_char}' - Buffer: '#{reader.buffer}', #{reader.index}"
+  str << reader.next_char
 end
 
-puts "\nPeek: '#{reader.peek_char}' - Buffer: '#{reader.buffer}', #{reader.index}"
-puts "'#{reader.next_char}' - Buffer: '#{reader.buffer}', #{reader.index}"
+fail "Bad Reads" if str != 'ABCDEFGHIJ'
 
-# reader.put_back
-# reader.put_back
-# puts "'#{reader.next_char}' - Buffer: '#{reader.buffer}', #{reader.index}"
+str = reader.read_upto 'P'
+fail "Bad Reads" if str != 'KLMNO'
 
-# reader.put_back
-# reader.put_back
-# puts "'#{reader.next_char}' - Buffer: '#{reader.buffer}', #{reader.index}"
+str = reader.read_until '9'
+fail "Bad Reads" if str != 'PQRSTUVWXYZ0123456789'
 
-puts "\nBuffer: '#{reader.buffer}', #{reader.index}"
+fail "Not nil: #{reader.peek_char}" unless reader.peek_char.nil?
+fail "Not nil: #{reader.next_char}" unless reader.next_char.nil?
+
