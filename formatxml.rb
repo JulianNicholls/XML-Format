@@ -15,10 +15,7 @@ class XMLFormatter
   end
 
   def process
-    loop do
-      token = next_token
-      break if token.nil?
-
+    until (token = next_token).nil?
       process_token token
     end
   end
@@ -27,7 +24,6 @@ class XMLFormatter
 
   def next_token
     text = @reader.peek_char
-    return nil if text.nil?
 
     if text == '<'
       text = read_until_close
@@ -35,6 +31,8 @@ class XMLFormatter
     else
       TextToken.new(read_until_open)
     end
+  rescue
+    nil
   end
 
   def process_token(token)

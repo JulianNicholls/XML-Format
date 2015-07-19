@@ -1,4 +1,4 @@
-# Indentation
+# Indentation handler
 class Spacer
   def initialize(width = 2)
     @width = width

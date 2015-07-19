@@ -1,16 +1,27 @@
 # Token class
-Token = Struct.new(:type, :text) do
+class Token
+  attr_reader :type, :text
+
+  def initialize(text)
+    @type = :text
+    @text = text
+  end
+
   def output(spacer)
     spacer.output
     puts @text
   end
 end
 
+# Text holder
+class TextToken < Token
+end
+
 # Opening or single XML tag
 class OpenToken < Token
   def initialize(text)
     @type = :open
-    @text = text
+    super
   end
 
   def output(spacer)
@@ -23,7 +34,7 @@ end
 class CloseToken < Token
   def initialize(text)
     @type = :close
-    @text = text
+    super
   end
 
   def output(spacer)
@@ -32,10 +43,3 @@ class CloseToken < Token
   end
 end
 
-# Text
-class TextToken < Token
-  def initialize(text)
-    @type = :text
-    @text = text
-  end
-end

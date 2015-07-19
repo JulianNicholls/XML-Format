@@ -49,5 +49,6 @@ class XMLReader
   def refill
     @buffer = @file.read @chunk
     @index = 0
+    # $stderr.puts "GC Count: #{GC.count}\nInfo: #{GC.latest_gc_info}"
   end
 end
