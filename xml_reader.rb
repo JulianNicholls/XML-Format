@@ -1,4 +1,4 @@
-# Reader of files, that buffers and ensures that 10 characters of pushback
+# Reader of files, in buffers of chunk bytes.
 class XMLReader
   def initialize(filename, chunk = 1_048_576 * 5)
     @file = open filename

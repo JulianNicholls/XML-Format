@@ -8,8 +8,7 @@ class Token
   end
 
   def output(spacer)
-    spacer.output
-    puts @text
+    spacer.output @text
   end
 end
 
@@ -20,8 +19,8 @@ end
 # Opening or single XML tag
 class OpenToken < Token
   def initialize(text)
-    @type = :open
     super
+    @type = :open
   end
 
   def output(spacer)
@@ -33,8 +32,8 @@ end
 # Closing XML tag
 class CloseToken < Token
   def initialize(text)
-    @type = :close
     super
+    @type = :close
   end
 
   def output(spacer)
@@ -42,4 +41,3 @@ class CloseToken < Token
     super
   end
 end
-

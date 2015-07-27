@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby -I.
+
 # Simple:                                 2M                    5M
 #   real	1101m26.333s                   real  12m20.276s    12m7.9s
 #   user	19m38.589s      18m46.7s       user  12m8.402s     12m0.6s
@@ -15,7 +17,7 @@ class XMLFormatter
   end
 
   def process
-    until (token = next_token).nil?
+    while (token = next_token)
       process_token token
     end
   end
@@ -23,23 +25,18 @@ class XMLFormatter
   private
 
   def next_token
-    text = @reader.peek_char
+    return TextToken.new(read_until_open) unless @reader.peek_char == '<'
 
-    if text == '<'
-      text = read_until_close
-      text[1] == '/' ? CloseToken.new(text) : OpenToken.new(text)
-    else
-      TextToken.new(read_until_open)
-    end
+    text = read_until_close
+    text[1] == '/' ? CloseToken.new(text) : OpenToken.new(text)
   rescue
     nil
   end
 
   def process_token(token)
     case token.type
-    when :open   then  process_opening_tag token
-    when :close  then  token.output @spacer
-    when :text   then  token.output @spacer
+    when :open          then  process_opening_tag token
+    when :close, :text  then  token.output @spacer
     else
       fail "Bad token returned from next_token: #{token}"
     end
@@ -70,8 +67,7 @@ class XMLFormatter
   end
 
   def format_tagged_item(open, text, close)
-    @spacer.output
-    puts "#{open.text}#{text.text}#{close.text}"
+    @spacer.output "#{open.text}#{text.text}#{close.text}"
   end
 end
 

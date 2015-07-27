@@ -14,7 +14,8 @@ class Spacer
     fail 'Indent went past 0' if @level < 0
   end
 
-  def output
+  def output(text)
     print ' ' * (@width * @level)
+    puts text
   end
 end
