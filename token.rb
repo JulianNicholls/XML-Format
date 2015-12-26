@@ -16,6 +16,17 @@ end
 class TextToken < Token
 end
 
+# Null Token
+
+class NullToken < Token
+  def initialize(*)
+    @type = :null
+  end
+
+  def output(*)
+  end
+end
+
 # Opening or single XML tag
 class OpenToken < Token
   def initialize(text)
