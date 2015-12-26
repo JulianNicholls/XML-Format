@@ -52,7 +52,7 @@ class XMLFormatter
 
     # It should be a closing tag now...
     close_token = next_token
-    fail "Not a close: #{open_token} #{text_token} #{close_token}" unless
+    fail "Not a close: #{open_token.inspect} #{text_token.inspect} #{close_token.inspect}" unless
       close_token.type == :close
 
     format_tagged_item(open_token, text_token, close_token)
