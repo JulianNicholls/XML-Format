@@ -16,14 +16,13 @@ str = ''
   str << reader.next_char
 end
 
-fail "Bad Reads" if str != 'ABCDEFGHIJ'
+fail 'Bad Reads' if str != 'ABCDEFGHIJ'
 
 str = reader.read_upto 'P'
 fail "Bad Reads: #{str}" if str != 'KLMNO'
 
 str = reader.read_until '9'
-fail "Bad Reads" if str != 'PQRSTUVWXYZ0123456789'
+fail 'Bad Reads' if str != 'PQRSTUVWXYZ0123456789'
 
 fail "Not nil: #{reader.peek_char}" unless reader.peek_char.nil?
 fail "Not nil: #{reader.next_char}" unless reader.next_char.nil?
-
