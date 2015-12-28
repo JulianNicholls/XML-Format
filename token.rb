@@ -10,21 +10,14 @@ class Token
   def output(spacer)
     spacer.output @text
   end
+
+  def to_s
+    "<Token: #{@type}, text: '#{@text}'>"
+  end
 end
 
 # Text holder
 class TextToken < Token
-end
-
-# Null Token
-
-class NullToken < Token
-  def initialize(*)
-    @type = :null
-  end
-
-  def output(*)
-  end
 end
 
 # Opening or single XML tag
