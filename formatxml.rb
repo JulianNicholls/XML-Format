@@ -28,6 +28,9 @@ class XMLFormatter
     return TextToken.new(read_until_open) unless @reader.peek_char == '<'
 
     text = read_until_close
+
+    return collect_CDATA(text) if text[0..8] == '<![CDATA['
+
     text[1] == '/' ? CloseToken.new(text) : OpenToken.new(text)
   rescue
     nil
@@ -52,7 +55,7 @@ class XMLFormatter
 
     # It should be a closing tag now...
     close_token = next_token
-    fail "Not a close: #{open_token.inspect} #{text_token.inspect} #{close_token.inspect}" unless
+    fail "Not a close: #{open_token} #{text_token} #{close_token}" unless
       close_token.type == :close
 
     format_tagged_item(open_token, text_token, close_token)
@@ -68,6 +71,12 @@ class XMLFormatter
 
   def format_tagged_item(open, text, close)
     @spacer.output "#{open.text}#{text.text}#{close.text}"
+  end
+
+  def collect_CDATA(text)
+    text += read_until_close until text[-3..-2] == ']]'
+
+    TextToken.new(text[9..-4])
   end
 end
 
