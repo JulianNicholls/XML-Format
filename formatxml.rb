@@ -47,6 +47,7 @@ class XMLFormatter
 
   # Process a sequence like <name>Julian</name>
   def process_opening_tag(open_token)
+    skip_whitespace
     # If another tag follows the first, output the first and return
     return open_token.output(@spacer) if @reader.peek_char == '<'
 
@@ -61,6 +62,16 @@ class XMLFormatter
     format_tagged_item(open_token, text_token, close_token)
   end
 
+  def skip_whitespace
+    @reader.skip_whitespace
+  end
+
+  def collect_CDATA(text)
+    text += read_until_close until text[-3..-2] == ']]'
+
+    TextToken.new(text[9..-4])
+  end
+
   def read_until_close
     @reader.read_until '>'
   end
@@ -71,12 +82,6 @@ class XMLFormatter
 
   def format_tagged_item(open, text, close)
     @spacer.output "#{open.text}#{text.text}#{close.text}"
-  end
-
-  def collect_CDATA(text)
-    text += read_until_close until text[-3..-2] == ']]'
-
-    TextToken.new(text[9..-4])
   end
 end
 

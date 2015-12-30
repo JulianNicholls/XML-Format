@@ -21,6 +21,10 @@ class XMLReader
     str
   end
 
+  def skip_whitespace
+    next_char while peek_char =~ /\s/
+  end
+
   def next_char
     char = peek_char
     increment
