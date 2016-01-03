@@ -5,12 +5,18 @@
 #   user	19m38.589s      18m46.7s       user  12m8.402s     12m0.6s
 #   sys	    8m1.223s        7m45.402s    sys   0m6.491s      0m4.9s
 
+require 'forwardable'
+
 require './xml_reader'
 require './token'
 require './spacer'
 
 # Format an XML file with indentation and newlines after closing tags.
 class XMLFormatter
+  extend Forwardable
+
+  def_delegators :@reader, :peek_char, :read_until, :read_upto, :skip_whitespace
+
   def initialize(filename)
     @reader = XMLReader.new filename
     @spacer = Spacer.new
@@ -25,7 +31,7 @@ class XMLFormatter
   private
 
   def next_token
-    return TextToken.new(read_until_open) unless @reader.peek_char == '<'
+    return TextToken.new(read_until_open) unless peek_char == '<'
 
     text = read_until_close
 
@@ -49,7 +55,7 @@ class XMLFormatter
   def process_opening_tag(open_token)
     skip_whitespace
     # If another tag follows the first, output the first and return
-    return open_token.output(@spacer) if @reader.peek_char == '<'
+    return open_token.output(@spacer) if peek_char == '<'
 
     # Some sort of text follows for sure
     text_token = next_token
@@ -62,10 +68,6 @@ class XMLFormatter
     format_tagged_item(open_token, text_token, close_token)
   end
 
-  def skip_whitespace
-    @reader.skip_whitespace
-  end
-
   def collect_CDATA(text)
     text += read_until_close until text[-3..-2] == ']]'
 
@@ -73,11 +75,11 @@ class XMLFormatter
   end
 
   def read_until_close
-    @reader.read_until '>'
+    read_until '>'
   end
 
   def read_until_open
-    @reader.read_upto '<'
+    read_upto '<'
   end
 
   def format_tagged_item(open, text, close)
