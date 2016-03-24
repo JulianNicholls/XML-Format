@@ -47,7 +47,7 @@ class XMLFormatter
     when :open          then  process_opening_tag token
     when :close, :text  then  token.output @spacer
     else
-      fail "Bad token returned from next_token: #{token}"
+      raise "Bad token returned from next_token: #{token}"
     end
   end
 
@@ -62,7 +62,7 @@ class XMLFormatter
 
     # It should be a closing tag now...
     close_token = next_token
-    fail "Not a close: #{open_token} #{text_token} #{close_token}" unless
+    raise "Not a close: #{open_token} #{text_token} #{close_token}" unless
       close_token.type == :close
 
     format_tagged_item(open_token, text_token, close_token)

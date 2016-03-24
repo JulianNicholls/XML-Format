@@ -11,7 +11,7 @@ class Spacer
 
   def outdent
     @level -= 1
-    fail 'Indent went past 0' if @level < 0
+    raise 'Indent went past 0' if @level < 0
   end
 
   def output(text)
