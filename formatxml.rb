@@ -1,4 +1,7 @@
-#!/usr/bin/env ruby -I.
+#! /usr/bin/env ruby
+
+this_dir = File.expand_path(File.dirname(__FILE__))
+$LOAD_PATH.unshift(this_dir) unless $LOAD_PATH.include?(this_dir)
 
 # Simple:                                 2M                    5M
 #   real	1101m26.333s                   real  12m20.276s    12m7.9s
